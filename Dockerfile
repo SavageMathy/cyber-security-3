@@ -1,4 +1,4 @@
-FROM python:3.11-slim-bookworm
+FROM python:3.15-slim-bookworm
 RUN groupadd -r appgroup && useradd -r -g appgroup appuser
 RUN pip install --no-cache-dir -r requirements.txt
 COPY app.py ./
