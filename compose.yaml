@@ -1,0 +1,22 @@
+name: securedev-estudiante
+
+services:
+  app:
+    build: .
+    environment:
+      DATABASE_PATH: /data/securedev.db
+      # VULN 6 CORREGIDA: Usamos un archivo .env o variable de entorno del sistema
+      SECRET_KEY: ${SECRET_KEY:?La variable SECRET_KEY es requerida}
+    volumes:
+      - app_data:/data
+    ports:
+      - "127.0.0.1:8000:8000"
+    # Limitar recursos y capacidades
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  app_data:
