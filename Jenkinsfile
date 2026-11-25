@@ -27,15 +27,14 @@ pipeline {
                 stage('Security Scan (ZAP)') {
             steps {
                 script {
-                    // 1. Levantar la app. Al no especificar red, Docker la pone en la red por defecto
+                    // 1. Levantar la app CON la SECRET_KEY para que no falle
                     sh """
-                    docker run -d --rm --name zap-target -p 8000:8000 ${APP_IMAGE}
+                    docker rm -f zap-target || true
+                    docker run -d --name zap-target -e SECRET_KEY=clave-super-secreta-para-el-pipeline -p 8000:8000 ${APP_IMAGE}
                     sleep 5
                     """
                     
-                    // 2. Ejecutar ZAP.
-                    // Usamos --network container:zap-target
-                    // Así, ZAP puede acceder a la app directamente usando http://localhost:8000
+                    // 2. Ejecutar ZAP compartiendo la red del contenedor
                     sh """
                     docker run --rm --network container:zap-target \
                         -v \$(pwd):/zap/wrk/:rw \
@@ -44,8 +43,8 @@ pipeline {
                         zap-baseline.py -t http://localhost:8000 -r zap-report.html
                     """
                     
-                    // 3. Detener la app
-                    sh "docker stop zap-target"
+                    // 3. Limpiar el contenedor
+                    sh "docker rm -f zap-target"
                 }
             }
             post {
