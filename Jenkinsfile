@@ -27,14 +27,14 @@ pipeline {
         stage('Security Scan (ZAP)') {
             steps {
                 script {
-                    // 1. Limpiar y levantar la app con la SECRET_KEY y la ruta de DB en /tmp
+                    // 1. Levantar la app
                     sh """
                     docker rm -f zap-target || true
                     docker run -d --name zap-target -e SECRET_KEY=clave-super-secreta-para-el-pipeline -e DATABASE_PATH=/tmp/securedev.db -p 8000:8000 ${APP_IMAGE}
                     sleep 5
                     """
                     
-                    // 2. Ejecutar ZAP
+                    // 2. Ejecutar ZAP (usando -I para que no falle por advertencias)
                     sh """
                     docker run --rm --network container:zap-target \
                         -v \$(pwd):/zap/wrk/:rw \
@@ -49,6 +49,7 @@ pipeline {
             }
             post {
                 always {
+                    // Forzar el archivado del reporte
                     archiveArtifacts artifacts: 'zap-report.html', allowEmptyArchive: true
                 }
             }
