@@ -7,6 +7,7 @@ from markupsafe import escape  # Para sanitizar XSS
 
 from flask import Flask, abort, g, redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
+from prometheus_flask_exporter import PrometheusMetrics 
 
 
 def create_app(database_path=None):

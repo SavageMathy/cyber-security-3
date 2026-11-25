@@ -5,18 +5,29 @@ services:
     build: .
     environment:
       DATABASE_PATH: /data/securedev.db
-      # VULN 6 CORREGIDA: Usamos un archivo .env o variable de entorno del sistema
       SECRET_KEY: ${SECRET_KEY:?La variable SECRET_KEY es requerida}
     volumes:
       - app_data:/data
     ports:
       - "127.0.0.1:8000:8000"
-    # Limitar recursos y capacidades
-    read_only: true
-    tmpfs:
-      - /tmp
-    security_opt:
-      - no-new-privileges:true
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    depends_on:
+      - app
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
 
 volumes:
   app_data:
