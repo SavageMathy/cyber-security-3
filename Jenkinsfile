@@ -37,15 +37,7 @@ pipeline {
                     // 2. Ejecutar ZAP y guardar en un volumen, luego imprimir el reporte
                     sh """
                     docker volume create zap-data || true
-                    
-                    // Ejecutamos ZAP
-                    docker run --rm --network container:zap-target \
-                        -v zap-data:/zap/wrk/:rw \
-                        --user root \
-                        -t ghcr.io/zaproxy/zaproxy:stable \
-                        zap-baseline.py -t http://localhost:8000 -J zap-report.json -I || true
-                    
-                    // Extraemos el JSON y lo imprimimos en la consola de Jenkins
+                    docker run --rm --network container:zap-target -v zap-data:/zap/wrk/:rw --user root -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://localhost:8000 -J zap-report.json -I || true
                     echo "========== INICIO REPORTE ZAP =========="
                     docker run --rm -v zap-data:/data alpine cat /data/zap-report.json
                     echo "========== FIN REPORTE ZAP =========="
