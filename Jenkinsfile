@@ -40,7 +40,7 @@ pipeline {
                         -v \$(pwd):/zap/wrk/:rw \
                         --user root \
                         -t ghcr.io/zaproxy/zaproxy:stable \
-                        zap-baseline.py -t http://localhost:8000 -r zap-report.html
+                        zap-baseline.py -t http://localhost:8000 -r zap-report.html -I
                     """
                     
                     // 3. Limpiar
