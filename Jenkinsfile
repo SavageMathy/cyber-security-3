@@ -34,22 +34,27 @@ pipeline {
                     sleep 5
                     """
                     
-                    // 2. Ejecutar ZAP (usando -I para que no falle por advertencias)
+                    // 2. Ejecutar ZAP guardando en un volumen de Docker (no en el disco de Windows)
                     sh """
+                    docker volume create zap-data || true
                     docker run --rm --network container:zap-target \
-                        -v \$(pwd):/zap/wrk/:rw \
+                        -v zap-data:/zap/wrk/:rw \
                         --user root \
                         -t ghcr.io/zaproxy/zaproxy:stable \
                         zap-baseline.py -t http://localhost:8000 -r zap-report.html -I
                     """
                     
-                    // 3. Limpiar
+                    // 3. Copiar el archivo desde el volumen de Docker al workspace de Jenkins
+                    sh """
+                    docker run --rm -v zap-data:/data -v \$(pwd):/workspace alpine cp /data/zap-report.html /workspace/zap-report.html
+                    """
+                    
+                    // 4. Limpiar
                     sh "docker rm -f zap-target"
                 }
             }
             post {
                 always {
-                    // Forzar el archivado del reporte
                     archiveArtifacts artifacts: 'zap-report.html', allowEmptyArchive: true
                 }
             }
